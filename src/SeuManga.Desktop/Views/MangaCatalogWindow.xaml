@@ -1,0 +1,46 @@
+﻿<Window x:Class="SeuManga.Desktop.Views.MangaCatalogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Explorar mangás · SeuManga" Height="800" Width="1180" MinHeight="600" MinWidth="850"
+        WindowStartupLocation="CenterOwner" Background="#0D0B12" Foreground="#F5F3FF">
+    <Window.Resources>
+        <Style TargetType="Button"><Setter Property="Background" Value="#8B5CF6"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="14,9"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter></Style>
+        <Style TargetType="TextBox"><Setter Property="Background" Value="#211B2B"/><Setter Property="Foreground" Value="#F5F3FF"/><Setter Property="BorderBrush" Value="#332A40"/><Setter Property="Padding" Value="12,9"/><Setter Property="CaretBrush" Value="White"/></Style>
+        <DataTemplate x:Key="MangaCard"><Button Click="MangaCard_Click" Padding="0" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"><Border Background="#17131F" BorderBrush="#332A40" BorderThickness="1" CornerRadius="12" Margin="0,0,14,14" Padding="10"><StackPanel>
+            <Border Height="205" Background="#211B2B" CornerRadius="8" ClipToBounds="True"><Grid><Image Source="{Binding CoverUrl}" Stretch="UniformToFill"/><TextBlock Text="Sem capa" Foreground="#71717A" HorizontalAlignment="Center" VerticalAlignment="Center"/></Grid></Border>
+            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,10,0,4" MaxHeight="40"/><TextBlock Text="{Binding Status}" Foreground="#A78BFA" FontSize="11"/><TextBlock Text="{Binding Description}" Foreground="#A1A1AA" FontSize="11" TextWrapping="Wrap" Margin="0,6,0,0" MaxHeight="52" TextTrimming="CharacterEllipsis"/>
+        </StackPanel></Border></Button></DataTemplate>
+    </Window.Resources>
+    <DockPanel Margin="28">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="CATÁLOGO MANGADEX" Foreground="#A78BFA" FontSize="11" FontWeight="Bold"/>
+            <TextBlock Text="Explorar mangás" FontSize="28" FontWeight="SemiBold" Margin="0,8,0,18"/>
+            <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Right" Content="Pesquisar" Command="{Binding SearchCommand}" Margin="10,0,0,0"/>
+                <ComboBox DockPanel.Dock="Right" Width="145" SelectedValue="{Binding Status}" SelectedValuePath="Tag" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Padding="8,7" Margin="0,0,10,0"><ComboBoxItem Content="Qualquer status" Tag="" IsSelected="True"/><ComboBoxItem Content="Em publicação" Tag="ongoing"/><ComboBoxItem Content="Concluído" Tag="completed"/><ComboBoxItem Content="Em pausa" Tag="hiatus"/><ComboBoxItem Content="Cancelado" Tag="cancelled"/></ComboBox>
+                <TextBox Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" ToolTip="Título do mangá"/>
+            </DockPanel>
+            <Expander Header="Filtros avançados" Foreground="#A78BFA" Margin="0,10,0,0">
+                <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8"><TextBlock Text="Idioma dos capítulos" Foreground="#A1A1AA" FontSize="11"/><ComboBox SelectedValue="{Binding TranslatedLanguage}" SelectedValuePath="Tag" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Padding="7"><ComboBoxItem Content="Qualquer idioma" Tag="" IsSelected="True"/><ComboBoxItem Content="Português (Brasil)" Tag="pt-br"/><ComboBoxItem Content="Inglês" Tag="en"/><ComboBoxItem Content="Japonês" Tag="ja"/><ComboBoxItem Content="Espanhol (Latino)" Tag="es-la"/><ComboBoxItem Content="Francês" Tag="fr"/></ComboBox><TextBlock Text="Idioma original" Foreground="#A1A1AA" FontSize="11" Margin="0,6,0,0"/><ComboBox SelectedValue="{Binding OriginalLanguage}" SelectedValuePath="Tag" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Padding="7"><ComboBoxItem Content="Qualquer idioma" Tag="" IsSelected="True"/><ComboBoxItem Content="Japonês" Tag="ja"/><ComboBoxItem Content="Coreano" Tag="ko"/><ComboBoxItem Content="Chinês" Tag="zh"/><ComboBoxItem Content="Inglês" Tag="en"/></ComboBox></StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,8"><TextBlock Text="Ordenar por" Foreground="#A1A1AA" FontSize="11"/><ComboBox SelectedValue="{Binding Sort}" SelectedValuePath="Tag" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Padding="7"><ComboBoxItem Content="Relevância" Tag="relevance" IsSelected="True"/><ComboBoxItem Content="Título" Tag="title"/><ComboBoxItem Content="Atualizados recentemente" Tag="updatedAt"/><ComboBoxItem Content="Adicionados recentemente" Tag="createdAt"/><ComboBoxItem Content="Popularidade" Tag="followedCount"/></ComboBox></StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,18,0,8"><CheckBox Content="Incluir erótico" IsChecked="{Binding IncludeErotica}" Foreground="#F5F3FF"/><CheckBox Content="Incluir explícito" IsChecked="{Binding IncludePornographic}" Foreground="#F5F3FF" Margin="0,5,0,0"/></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,8"><TextBlock Text="Autor (nome exato)" Foreground="#A1A1AA" FontSize="11"/><TextBox Text="{Binding Author, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,8"><TextBlock Text="Artista (nome exato)" Foreground="#A1A1AA" FontSize="11"/><TextBox Text="{Binding Artist, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,8"><TextBlock Text="Modo das tags" Foreground="#A1A1AA" FontSize="11"/><ComboBox SelectedValue="{Binding TagMode}" SelectedValuePath="Tag" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Padding="7"><ComboBoxItem Content="Qualquer tag (OR)" Tag="OR" IsSelected="True"/><ComboBoxItem Content="Todas as tags (AND)" Tag="AND"/></ComboBox></StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,0"><TextBlock Text="Incluir tags (separadas por vírgula)" Foreground="#A1A1AA" FontSize="11"/><TextBox Text="{Binding IncludedTags, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"><TextBlock Text="Excluir tags (separadas por vírgula)" Foreground="#A1A1AA" FontSize="11"/><TextBox Text="{Binding ExcludedTags, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,8,8,0"><TextBlock Text="Ano de publicação" Foreground="#A1A1AA" FontSize="11"/><TextBox Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}" ToolTip="Ex.: 2020"/></StackPanel><StackPanel Grid.Row="3" Grid.Column="1" Margin="0,8,8,0"><TextBlock Text="Demografia" Foreground="#A1A1AA" FontSize="11"/><ComboBox SelectedValue="{Binding Demographic}" SelectedValuePath="Tag" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Padding="7"><ComboBoxItem Content="Qualquer" Tag="" IsSelected="True"/><ComboBoxItem Content="Shōnen" Tag="shounen"/><ComboBoxItem Content="Shōjo" Tag="shoujo"/><ComboBoxItem Content="Seinen" Tag="seinen"/><ComboBoxItem Content="Josei" Tag="josei"/></ComboBox></StackPanel></Grid>
+            </Expander>
+            <DockPanel Margin="0,12,0,12">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="‹ Anterior" Command="{Binding PreviousPageCommand}" Background="#211B2B" Margin="0,0,8,0"/><Button Content="Próxima ›" Command="{Binding NextPageCommand}" Background="#211B2B"/></StackPanel>
+                <TextBlock Text="{Binding Message}" Foreground="#A1A1AA" VerticalAlignment="Center"/>
+            </DockPanel>
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"><ItemsControl ItemsSource="{Binding Results}" ItemTemplate="{StaticResource MangaCard}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="5"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl></ScrollViewer>
+    </DockPanel>
+</Window>
+
+
+
+

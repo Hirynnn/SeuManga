@@ -1,0 +1,90 @@
+﻿<Window x:Class="SeuManga.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SeuManga" Height="760" Width="1280" MinHeight="620" MinWidth="980"
+        WindowStartupLocation="CenterScreen" Background="#0D0B12" Foreground="#F5F3FF" KeyDown="MainWindow_KeyDown">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#8B5CF6"/><Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="13,9"/>
+            <Setter Property="FontSize" Value="13"/><Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border><ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.88"/></Trigger>
+                    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.72"/></Trigger>
+                    <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value="0.45"/></Trigger>
+                </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#211B2B"/><Setter Property="Foreground" Value="#F5F3FF"/>
+            <Setter Property="BorderBrush" Value="#332A40"/><Setter Property="CaretBrush" Value="#A78BFA"/>
+            <Setter Property="Padding" Value="12,9"/><Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="#A1A1AA"/>
+            <Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="14,11"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/><Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/><Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                <Border x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="9" Padding="{TemplateBinding Padding}">
+                    <ContentPresenter/>
+                </Border><ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Root" Property="Background" Value="#211B2B"/><Setter Property="Foreground" Value="#F5F3FF"/></Trigger>
+                    <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.48"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+                </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="248"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Border Grid.Column="0" Background="#17131F" BorderBrush="#332A40" BorderThickness="0,0,1,0">
+            <DockPanel Margin="18,22">
+                <StackPanel DockPanel.Dock="Top">
+                    <StackPanel Orientation="Horizontal" Margin="8,4,0,30"><Border Width="34" Height="34" CornerRadius="10" Background="#8B5CF6"><TextBlock Text="S" FontWeight="Bold" FontSize="21" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><TextBlock Text="SeuManga" FontSize="21" FontWeight="SemiBold" Margin="11,2,0,0"/></StackPanel>
+                    <TextBlock Text="BIBLIOTECA" FontSize="10" FontWeight="Bold" Foreground="#71717A" Margin="12,0,0,9"/>
+                    <Button x:Name="HomeNavButton" AutomationProperties.AutomationId="HomeNavigation" Style="{StaticResource NavButton}" Content="⌂    Início" Click="Home_Click"/>
+                    <Button x:Name="MangaNavButton" AutomationProperties.AutomationId="MangaNavigation" Style="{StaticResource NavButton}" Content="⌕    Explorar mangás" Click="Manga_Click"/>
+                    <Button x:Name="AnimeNavButton" AutomationProperties.AutomationId="AnimeNavigation" Style="{StaticResource NavButton}" Content="◈    Explorar animes" Click="Anime_Click"/>
+                    <Button x:Name="LibraryNavButton" AutomationProperties.AutomationId="LibraryNavigation" Style="{StaticResource NavButton}" Content="▤    Minha biblioteca" Click="Library_Click"/>
+                    <Button x:Name="HistoryNavButton" AutomationProperties.AutomationId="HistoryNavigation" Style="{StaticResource NavButton}" Content="◷    Histórico" Click="History_Click"/>
+                    <Button x:Name="FavoritesNavButton" AutomationProperties.AutomationId="FavoritesNavigation" Style="{StaticResource NavButton}" Content="♡    Favoritos" Click="Favorites_Click"/>
+                    <Button x:Name="ListsNavButton" AutomationProperties.AutomationId="ListsNavigation" Style="{StaticResource NavButton}" Content="▧    Listas personalizadas" Click="Lists_Click"/>
+                    <Button x:Name="SettingsNavButton" AutomationProperties.AutomationId="SettingsNavigation" Style="{StaticResource NavButton}" Content="⚙    Configurações" Click="Settings_Click"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Bottom" Text="Biblioteca local · Mangás · Animes" Foreground="#71717A" FontSize="11" Margin="12,0,0,5"/>
+            </DockPanel>
+        </Border>
+        <ScrollViewer x:Name="HomeView" Grid.Column="1" VerticalScrollBarVisibility="Auto" Loaded="Home_Loaded">
+            <StackPanel Margin="52,38,52,48" MaxWidth="1000" HorizontalAlignment="Left">
+                <DockPanel Margin="0,0,0,30"><Button DockPanel.Dock="Right" Content="Buscar tudo" Click="GlobalSearch_Click" Margin="10,0,0,0" Padding="18,11"/><TextBox x:Name="GlobalQuery" Width="400" HorizontalAlignment="Left" ToolTip="Buscar mangás e animes" KeyDown="GlobalQuery_KeyDown" Padding="14,11"/></DockPanel>
+                <TextBlock Text="SEU ESPAÇO PARA MANGÁS E ANIMES" Foreground="#A78BFA" FontSize="11" FontWeight="Bold"/>
+                <TextBlock Text="Continue de onde parou" FontSize="32" FontWeight="SemiBold" Margin="0,12,0,8"/>
+                <TextBlock Text="Seus dados locais e descobertas atuais aparecem aqui." Foreground="#A1A1AA" FontSize="15" TextWrapping="Wrap"/><TextBlock Text="{Binding HomeMessage}" Foreground="#71717A" FontSize="11" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                <TextBlock Text="LEITURA RECENTE" Foreground="#A78BFA" FontSize="11" FontWeight="Bold" Margin="0,30,0,10"/>
+                <ItemsControl ItemsSource="{Binding RecentReads}"><ItemsControl.ItemTemplate><DataTemplate><Button Tag="{Binding}" Click="ResumeReading_Click" Background="#17131F" Padding="16" Margin="0,0,0,8" HorizontalContentAlignment="Left"><StackPanel><TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"/><TextBlock Text="{Binding ChapterNumber}" Foreground="#A78BFA" Margin="0,4,0,0"/><TextBlock Text="{Binding UpdatedAt, StringFormat=Última leitura: {0:g}}" Foreground="#A1A1AA" FontSize="11" Margin="0,4,0,0"/></StackPanel></Button></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                <TextBlock Text="CONTINUE ASSISTINDO" Foreground="#A78BFA" FontSize="11" FontWeight="Bold" Margin="0,18,0,10"/>
+                <ItemsControl ItemsSource="{Binding TrackedAnime}"><ItemsControl.ItemTemplate><DataTemplate><Button Tag="{Binding}" Click="ContinueAnime_Click" Background="#17131F" Padding="16" Margin="0,0,0,8" HorizontalContentAlignment="Left"><StackPanel><TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"/><TextBlock Text="{Binding ProgressText}" Foreground="#A78BFA" FontSize="11" Margin="0,4,0,0"/><TextBlock Text="{Binding StatusLabel}" Foreground="#A1A1AA" FontSize="11" Margin="0,3,0,0"/></StackPanel></Button></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                <TextBlock Text="POPULARES AGORA · JIKAN" Foreground="#A78BFA" FontSize="11" FontWeight="Bold" Margin="0,22,0,10"/><ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"><ItemsControl ItemsSource="{Binding PopularAnime}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><Button Tag="{Binding}" Click="PopularAnime_Click" Background="#17131F" Width="175" Padding="10" Margin="0,0,10,0" HorizontalContentAlignment="Left"><StackPanel><Image Source="{Binding ImageUrl}" Width="150" Height="190" Stretch="UniformToFill"/><TextBlock Text="{Binding Title}" Foreground="#F5F3FF" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,7,0,0"/><TextBlock Text="{Binding Score, StringFormat=Avaliação: {0}}" Foreground="#A78BFA" FontSize="11" Margin="0,4,0,0"/></StackPanel></Button></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+<TextBlock Text="RECOMENDADOS COM BASE NA SUA BIBLIOTECA" Foreground="#A78BFA" FontSize="11" FontWeight="Bold" Margin="0,22,0,10"/><ItemsControl ItemsSource="{Binding HomeRecommendations}"><ItemsControl.ItemTemplate><DataTemplate><Button Tag="{Binding Anime}" Click="RecommendedAnime_Click" Background="#17131F" Padding="12" Margin="0,0,0,7" HorizontalContentAlignment="Left"><DockPanel><Image Source="{Binding Anime.ImageUrl}" Width="42" Height="56" Stretch="UniformToFill"/><StackPanel Margin="10,0,0,0"><TextBlock Text="{Binding Anime.Title}" FontWeight="SemiBold"/><TextBlock Text="{Binding Votes, StringFormat=Recomendado por {0} votos}" Foreground="#A1A1AA" FontSize="11" Margin="0,4,0,0"/></StackPanel></DockPanel></Button></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><StackPanel Orientation="Horizontal" Margin="0,18,0,0"><Button Content="Explorar mangás" Click="Manga_Click"/><Button Content="Explorar animes" Click="Anime_Click" Margin="10,0,0,0"/></StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        <Border x:Name="PageContainer" Grid.Column="1" Visibility="Collapsed" Background="#0D0B12">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="#17131F" BorderBrush="#332A40" BorderThickness="0,0,0,1" Padding="26,16">
+                    <DockPanel>
+                        <Button x:Name="BackButton" AutomationProperties.AutomationId="BackNavigation" DockPanel.Dock="Left" Content="‹   Voltar" Click="Back_Click" Background="#211B2B" Padding="14,9" Margin="0,0,16,0"/>
+                        <TextBlock x:Name="PageHeading" AutomationProperties.AutomationId="PageHeading" Text="SeuManga" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock DockPanel.Dock="Right" Text="SEUMANGA" Foreground="#A78BFA" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Border>
+                <ContentControl x:Name="PageHost" Background="#0D0B12"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>
+
+
+
+
+

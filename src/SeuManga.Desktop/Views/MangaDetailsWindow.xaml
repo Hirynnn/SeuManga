@@ -1,0 +1,19 @@
+﻿<Window x:Class="SeuManga.Desktop.Views.MangaDetailsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Detalhes do mangá" Width="980" Height="760" MinWidth="760" MinHeight="560" Background="#0D0B12" Foreground="#F5F3FF" WindowStartupLocation="CenterOwner">
+    <Window.Resources><Style TargetType="Button"><Setter Property="Background" Value="#8B5CF6"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="12,8"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Setter.Value></Setter></Style></Window.Resources>
+    <Grid Margin="28"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <StackPanel Grid.Row="0"><TextBlock Text="{Binding Manga.Title}" FontSize="27" FontWeight="SemiBold" TextWrapping="Wrap"/><DockPanel Margin="0,8,0,16"><Button DockPanel.Dock="Right" Content="Adicionar à biblioteca" Click="AddToLibrary_Click"/><TextBlock x:Name="ChapterMessage" Text="{Binding Message}" Foreground="#A78BFA" VerticalAlignment="Center"/></DockPanel></StackPanel>
+        <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="3*"/></Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,24,0"><StackPanel>
+                <Border Height="360" Background="#211B2B" CornerRadius="12" ClipToBounds="True"><Image Source="{Binding Manga.CoverUrl}" Stretch="UniformToFill"/></Border>
+                <TextBlock Text="{Binding Manga.Status}" Foreground="#A78BFA" Margin="0,14,0,0"/>
+                <TextBlock Text="{Binding Manga.Description}" Foreground="#A1A1AA" TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="22"/>
+                <TextBlock Text="{Binding Manga.OriginalLanguage, StringFormat=Idioma original: {0}}" Foreground="#A1A1AA" Margin="0,12,0,0"/>
+            </StackPanel></ScrollViewer>
+            <DockPanel Grid.Column="1"><StackPanel DockPanel.Dock="Top"><TextBlock Text="Capítulos em português" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/><Button Content="Carregar mais capítulos" Command="{Binding LoadMoreCommand}" Background="#211B2B" HorizontalAlignment="Left" Margin="0,0,0,10"/></StackPanel>
+                <ListBox x:Name="ChapterList" ItemsSource="{Binding Chapters}" Background="#17131F" BorderBrush="#332A40" Foreground="#F5F3FF" SelectionChanged="ChapterList_SelectionChanged"><ListBox.ItemTemplate><DataTemplate><Border Padding="11" BorderBrush="#332A40" BorderThickness="0,0,0,1"><StackPanel><TextBlock Text="{Binding Chapter, StringFormat=Capítulo {0}}" FontWeight="SemiBold"/><TextBlock Text="{Binding Title}" Foreground="#A1A1AA" Margin="0,4,0,0"/><TextBlock Text="{Binding Group}" Foreground="#71717A" FontSize="11"/></StackPanel></Border></DataTemplate></ListBox.ItemTemplate></ListBox>
+            </DockPanel>
+        </Grid>
+    </Grid>
+</Window>
+
+

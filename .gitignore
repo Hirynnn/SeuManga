@@ -1,0 +1,11 @@
+﻿**/bin/
+**/obj/
+**/TestResults/
+installer/output/
+src/SeuManga.Desktop/bin/**/publish/
+*.db
+*.db-shm
+*.db-wal
+**/api-secrets.json
+**/logs/
+*.log
