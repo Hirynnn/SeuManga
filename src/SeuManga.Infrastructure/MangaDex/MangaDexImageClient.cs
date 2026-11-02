@@ -10,8 +10,6 @@ public sealed class MangaDexImageClient(HttpClient http) : IChapterImageProvider
             throw new InvalidDataException("A origem da imagem não é permitida.");
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
         request.Headers.Referrer = new Uri("https://mangadex.org/");
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("image/avif"));
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("image/webp"));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("image/*"));
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();

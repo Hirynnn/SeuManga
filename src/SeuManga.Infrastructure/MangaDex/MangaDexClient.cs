@@ -101,7 +101,7 @@ public sealed class MangaDexClient(HttpClient http, IMemoryCache? cache = null) 
         var tags = ReadTags(a);
         var details = new MangaDetails(mangaId, GetLocalized(a.GetProperty("title"), "pt-br") ?? GetLocalized(a.GetProperty("title"), "en") ?? "Título indisponível", alternate,
             GetLocalized(a.GetProperty("description"), "pt-br") ?? GetLocalized(a.GetProperty("description"), "en") ?? "Sinopse não disponível.", GetString(a, "status") ?? "unknown", GetString(a, "originalLanguage") ?? "",
-            a.TryGetProperty("year", out var y) && y.TryGetInt32(out var year) ? year : null, authors!, tags, coverUrl);
+            a.TryGetProperty("year", out var y) && y.TryGetInt32(out var year) ? year : null, authors!, tags, coverUrl, ReadTranslatedLanguages(a));
         cache?.Set(cacheKey, details, TimeSpan.FromMinutes(10));
         return details;
     }
@@ -112,15 +112,16 @@ public sealed class MangaDexClient(HttpClient http, IMemoryCache? cache = null) 
         var query = $"manga/{Uri.EscapeDataString(mangaId)}/feed?translatedLanguage[]={Uri.EscapeDataString(language)}&limit={limit}&offset={offset}&order[volume]=asc&order[chapter]=asc&includes[]=scanlation_group";
         using var response = await http.GetAsync(query, cancellationToken); await EnsureSuccess(response);
         using var doc = JsonDocument.Parse(await response.Content.ReadAsStreamAsync(cancellationToken)); var root = doc.RootElement;
-        var result = root.GetProperty("data").EnumerateArray().Select(e =>
+        var sourceItems = root.GetProperty("data").EnumerateArray().Select(e =>
         {
             var a = e.GetProperty("attributes");
             var group = e.GetProperty("relationships").EnumerateArray().FirstOrDefault(x => x.GetProperty("type").GetString() == "scanlation_group");
             return new MangaChapter(e.GetProperty("id").GetString() ?? "", mangaId, GetString(a, "volume"), GetString(a, "chapter"), GetLocalized(a.GetProperty("title"), "pt-br") ?? "", GetString(a, "translatedLanguage") ?? language,
                 group.ValueKind == JsonValueKind.Undefined ? null : GetString(group.GetProperty("attributes"), "name"), ParseDate(GetString(a, "publishAt")));
-        }).GroupBy(x => string.IsNullOrWhiteSpace(x.Number) ? x.Id : $"{x.Volume}:{x.Number}").Select(g => g.OrderByDescending(x => x.PublishedAt).First())
+        }).ToArray();
+        var result = sourceItems.GroupBy(x => string.IsNullOrWhiteSpace(x.Number) ? x.Id : $"{x.Volume}:{x.Number}").Select(g => g.OrderByDescending(x => x.PublishedAt).First())
           .OrderBy(x => decimal.TryParse(x.Number, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var n) ? n : decimal.MaxValue).ToArray();
-        var page = new MangaChapterPage(result, root.TryGetProperty("total", out var total) ? total.GetInt32() : result.Length);
+        var page = new MangaChapterPage(result, root.TryGetProperty("total", out var total) ? total.GetInt32() : sourceItems.Length, offset + sourceItems.Length);
         cache?.Set(cacheKey, page, TimeSpan.FromMinutes(2));
         return page;
     }
@@ -143,6 +144,10 @@ public sealed class MangaDexClient(HttpClient http, IMemoryCache? cache = null) 
     }
     private static IReadOnlyList<string> ReadTags(JsonElement attributes) => attributes.TryGetProperty("tags", out var tags) ? tags.EnumerateArray().Select(t => GetLocalized(t.GetProperty("attributes").GetProperty("name"), "pt-br") ?? GetLocalized(t.GetProperty("attributes").GetProperty("name"), "en") ?? "").Where(x => x.Length > 0).Take(4).ToArray() : [];
     private static string? GetLocalized(JsonElement e, string language) => e.ValueKind == JsonValueKind.Object && e.TryGetProperty(language, out var value) ? value.GetString() : null;
+    private static IReadOnlyList<string> ReadTranslatedLanguages(JsonElement attributes) =>
+        attributes.TryGetProperty("availableTranslatedLanguages", out var languages) && languages.ValueKind == JsonValueKind.Array
+            ? languages.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+            : [];
     private static string? GetString(JsonElement e, string name) => e.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     private static DateTimeOffset? ParseDate(string? value) => DateTimeOffset.TryParse(value, out var date) ? date : null;
     private static async Task EnsureSuccess(HttpResponseMessage response)
@@ -152,4 +157,3 @@ public sealed class MangaDexClient(HttpClient http, IMemoryCache? cache = null) 
         response.EnsureSuccessStatusCode(); await Task.CompletedTask;
     }
 }
-

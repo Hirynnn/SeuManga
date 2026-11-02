@@ -12,7 +12,7 @@ public partial class MangaDetailsWindow : Window
     private readonly IChapterImageProvider _images;
     public MangaDetailsWindow(MangaCatalogService catalog, LibraryService library, IChapterImageProvider images, MangaSearchResult manga)
     {
-        InitializeComponent(); _catalog = catalog; _library = library; _images = images; DataContext = new MangaDetailsViewModel(catalog, manga); Loaded += async (_, _) => await ((MangaDetailsViewModel)DataContext).LoadAsync();
+        InitializeComponent(); _catalog = catalog; _library = library; _images = images; DataContext = new MangaDetailsViewModel(catalog, manga, images); Loaded += async (_, _) => await ((MangaDetailsViewModel)DataContext).LoadAsync();
     }
     private async void AddToLibrary_Click(object sender, RoutedEventArgs e)
     {
@@ -35,4 +35,3 @@ public partial class MangaDetailsWindow : Window
         ChapterList.SelectedItem = null;
     }
 }
-

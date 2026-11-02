@@ -1,8 +1,64 @@
-﻿<Window x:Class="SeuManga.Desktop.Views.ReaderWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Leitor · SeuManga" Width="1180" Height="850" MinWidth="640" MinHeight="480" Background="#0D0B12" Foreground="#F5F3FF" KeyDown="Window_KeyDown" WindowStartupLocation="CenterOwner">
-    <DockPanel><Border DockPanel.Dock="Top" Background="#17131F" BorderBrush="#332A40" BorderThickness="0,0,0,1" Padding="12"><DockPanel>
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left"><Button x:Name="PreviousChapterButton" Content="Capítulo anterior" Click="PreviousChapter_Click" Background="#211B2B"/><Button x:Name="NextChapterButton" Content="Próximo capítulo" Click="NextChapter_Click" Background="#211B2B" Margin="8,0,8,0"/><Button x:Name="PreviousButton" Content="‹ Página" Click="Previous_Click" Background="#211B2B"/><Button x:Name="NextButton" Content="Página ›" Click="Next_Click" Background="#211B2B" Margin="8,0,0,0"/></StackPanel>
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right"><TextBlock x:Name="PageLabel" VerticalAlignment="Center" Margin="12,0"/><ComboBox x:Name="PageSelector" Width="84" SelectionChanged="PageSelector_SelectionChanged" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Margin="0,0,8,0"/><ComboBox x:Name="ReadingDirection" Width="180" SelectedIndex="0" SelectionChanged="ReadingDirection_SelectionChanged" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Margin="0,0,8,0"><ComboBoxItem Content="Mangá · direita para esquerda"/><ComboBoxItem Content="Ocidental · esquerda para direita"/></ComboBox><ComboBox x:Name="PageLayout" Width="120" SelectedIndex="0" SelectionChanged="PageLayout_SelectionChanged" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Margin="0,0,8,0"><ComboBoxItem Content="Página individual"/><ComboBoxItem Content="Duas páginas"/></ComboBox><ComboBox x:Name="ImageFit" Width="125" SelectedIndex="0" SelectionChanged="ImageFit_SelectionChanged" Background="#211B2B" Foreground="#F5F3FF" BorderBrush="#332A40" Margin="0,0,8,0"><ComboBoxItem Content="Ajustar largura"/><ComboBoxItem Content="Ajustar altura"/><ComboBoxItem Content="Conter na tela"/><ComboBoxItem Content="Tamanho original"/></ComboBox><Button Content="−" Click="ZoomOut_Click" Background="#211B2B" Padding="10,8"/><Button Content="+" Click="ZoomIn_Click" Background="#211B2B" Padding="10,8" Margin="4,0,8,0"/><Button Content="Tela cheia" Click="Fullscreen_Click" Background="#211B2B"/></StackPanel>
-        <TextBlock x:Name="ChapterTitle" Text="Leitor MangaDex" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-    </DockPanel></Border><wv2:WebView2 x:Name="Reader" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"/></DockPanel>
+<Window x:Class="SeuManga.Desktop.Views.ReaderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Leitor · SeuManga" Width="1180" Height="850" MinWidth="760" MinHeight="480"
+        Background="#0D0B12" Foreground="#F5F3FF" KeyDown="Window_KeyDown" WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#17131F" BorderBrush="#332A40" BorderThickness="0,0,0,1" Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="0">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <Button x:Name="PreviousChapterButton" Content="Capítulo anterior" Click="PreviousChapter_Click" Background="#211B2B"/>
+                        <Button x:Name="NextChapterButton" Content="Próximo capítulo" Click="NextChapter_Click" Background="#211B2B" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <Button DockPanel.Dock="Right" Content="Tela cheia" Click="Fullscreen_Click" Background="#211B2B" Margin="8,0,0,0"/>
+                    <TextBlock x:Name="ChapterTitle" Text="Leitor MangaDex" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12,0"/>
+                </DockPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <Button x:Name="PreviousButton" Content="‹ Página" Click="Previous_Click" Background="#211B2B"/>
+                    <Button x:Name="NextButton" Content="Página ›" Click="Next_Click" Background="#211B2B" Margin="8,0,8,0"/>
+                    <TextBlock x:Name="PageLabel" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="PageSelector" Width="76" SelectionChanged="PageSelector_SelectionChanged" AutomationProperties.Name="Selecionar página" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="ReadMode" Width="145" SelectedIndex="0" SelectionChanged="ReadMode_SelectionChanged" AutomationProperties.Name="Modo de leitura" Margin="0,0,8,0">
+                        <ComboBoxItem Content="Página a página"/>
+                        <ComboBoxItem Content="Rolagem contínua"/>
+                    </ComboBox>
+                    <ComboBox x:Name="ReadingDirection" Width="165" SelectedIndex="0" SelectionChanged="ReadingDirection_SelectionChanged" AutomationProperties.Name="Direção de leitura" Margin="0,0,8,0">
+                        <ComboBoxItem Content="Mangá · direita para esquerda"/>
+                        <ComboBoxItem Content="Ocidental · esquerda para direita"/>
+                    </ComboBox>
+                    <ComboBox x:Name="PageLayout" Width="112" SelectedIndex="0" SelectionChanged="PageLayout_SelectionChanged" AutomationProperties.Name="Layout da página" Margin="0,0,8,0">
+                        <ComboBoxItem Content="Uma página"/>
+                        <ComboBoxItem Content="Duas páginas"/>
+                    </ComboBox>
+                    <ComboBox x:Name="ImageFit" Width="116" SelectedIndex="0" SelectionChanged="ImageFit_SelectionChanged" AutomationProperties.Name="Ajuste da imagem" Margin="0,0,8,0">
+                        <ComboBoxItem Content="Ajustar largura"/>
+                        <ComboBoxItem Content="Ajustar altura"/>
+                        <ComboBoxItem Content="Conter na tela"/>
+                        <ComboBoxItem Content="Tamanho original"/>
+                    </ComboBox>
+                    <Button Content="−" Click="ZoomOut_Click" Background="#211B2B" Padding="10,8"/>
+                    <Button Content="+" Click="ZoomIn_Click" Background="#211B2B" Padding="10,8" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Grid Background="#0D0B12">
+            <ScrollViewer x:Name="PageViewport" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                          Background="#0D0B12" SizeChanged="PageViewport_SizeChanged">
+                <StackPanel x:Name="PageImageHost" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </ScrollViewer>
+            <ScrollViewer x:Name="ContinuousViewport" Visibility="Collapsed" Background="#0D0B12"
+                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                          ScrollChanged="ContinuousViewport_ScrollChanged" SizeChanged="ContinuousViewport_SizeChanged"
+                          AutomationProperties.Name="Páginas em rolagem contínua">
+                <StackPanel x:Name="ContinuousImageHost" HorizontalAlignment="Center"/>
+            </ScrollViewer>
+            <TextBlock x:Name="ReaderError" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center"
+                       VerticalAlignment="Center" Foreground="#FCA5A5" Margin="24" Visibility="Collapsed"/>
+        </Grid>
+    </DockPanel>
 </Window>
-

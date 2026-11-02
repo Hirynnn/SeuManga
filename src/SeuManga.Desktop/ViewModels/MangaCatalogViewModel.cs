@@ -1,11 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net.Http;
+using SeuManga.Application.Abstractions;
 using SeuManga.Application.Manga;
 namespace SeuManga.Desktop.ViewModels;
 
 public sealed class MangaCatalogViewModel : ViewModelBase
 {
     private readonly MangaCatalogService _catalog;
+    private readonly IChapterImageProvider _imageProvider;
     private string _query = "";
     private string _status = "";
     private string _translatedLanguage = "";
@@ -24,14 +26,16 @@ public sealed class MangaCatalogViewModel : ViewModelBase
     private string _message = "Pesquise por título para consultar o catálogo MangaDex.";
     private int _page = 1;
     private const int PageSize = 24;
-    public MangaCatalogViewModel(MangaCatalogService catalog)
+    public MangaCatalogViewModel(MangaCatalogService catalog, IChapterImageProvider imageProvider)
     {
         _catalog = catalog;
+        _imageProvider = imageProvider;
         SearchCommand = new AsyncCommand(() => LoadAsync(1), () => !IsBusy);
         NextPageCommand = new AsyncCommand(() => LoadAsync(Page + 1), () => !IsBusy);
         PreviousPageCommand = new AsyncCommand(() => LoadAsync(Page - 1), () => !IsBusy && Page > 1);
     }
     public ObservableCollection<MangaSearchResult> Results { get; } = [];
+    public IChapterImageProvider ImageProvider => _imageProvider;
     public string Query { get => _query; set => Set(ref _query, value); }
     public string Status { get => _status; set => Set(ref _status, value); }
     public string TranslatedLanguage { get => _translatedLanguage; set => Set(ref _translatedLanguage, value); }
@@ -79,13 +83,11 @@ public sealed class MangaCatalogViewModel : ViewModelBase
             Page = page;
             Message = result.Total == 0 ? "Nenhum mangá encontrado. Tente outro título ou filtro." : $"{result.Total:N0} resultados · página {Page}";
         }
-        catch (HttpRequestException ex) { Message = ex.Message; Results.Clear(); }
+        catch (HttpRequestException ex) { Message = ProviderErrorMessage("MangaDex", ex); Results.Clear(); }
         catch (ArgumentException ex) { Message = ex.Message; Results.Clear(); }
-        catch (TaskCanceledException) { Message = "A consulta demorou demais. Verifique a conexão e tente novamente."; Results.Clear(); }
+        catch (TaskCanceledException) { Message = "A MangaDex não respondeu a tempo. Verifique a conexão e tente novamente."; Results.Clear(); }
         catch (Exception) { Message = "Não foi possível consultar a MangaDex. Tente novamente mais tarde."; Results.Clear(); }
         finally { IsBusy = false; }
     }
     private static IReadOnlyList<string> ParseNames(string value) => value.Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
 }
-
-

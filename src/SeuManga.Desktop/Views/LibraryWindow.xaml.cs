@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using SeuManga.Application.Abstractions;
 using SeuManga.Application.Library;
 using SeuManga.Domain.Enums;
 namespace SeuManga.Desktop.Views;
@@ -10,7 +11,8 @@ public partial class LibraryWindow : Window
 {
     private readonly LibraryService _library;
     private readonly AnimeTrackingService _anime;
-    public LibraryWindow(LibraryService library, AnimeTrackingService anime) { InitializeComponent(); _library = library; _anime = anime; Owner = System.Windows.Application.Current.MainWindow; }
+    public LibraryWindow(LibraryService library, AnimeTrackingService anime, IChapterImageProvider imageProvider) { InitializeComponent(); _library = library; _anime = anime; ImageProvider = imageProvider; Owner = System.Windows.Application.Current.MainWindow; }
+    public IChapterImageProvider ImageProvider { get; }
     private async void Window_Loaded(object sender, RoutedEventArgs e) => await RefreshAsync();
     private async Task RefreshAsync()
     {

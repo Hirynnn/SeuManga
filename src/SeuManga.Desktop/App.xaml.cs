@@ -16,6 +16,7 @@ using SeuManga.Infrastructure.Security;
 using SeuManga.Infrastructure.TMDB;
 using SeuManga.Infrastructure.Watchmode;
 using SeuManga.Desktop.ViewModels;
+using SeuManga.Desktop.Networking;
 namespace SeuManga.Desktop;
 public partial class App : System.Windows.Application
 {
@@ -32,17 +33,21 @@ public partial class App : System.Windows.Application
             _host = Host.CreateDefaultBuilder().UseSerilog((_, logger) => logger.MinimumLevel.Information().WriteTo.File(Path.Combine(dataDirectory, "logs", "seumanga-.log"), rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7)).ConfigureServices(services =>
             {
                 services.AddMemoryCache();
-                services.AddHttpClient<IChapterImageProvider, MangaDexImageClient>(client => { client.Timeout = TimeSpan.FromSeconds(25); client.DefaultRequestHeaders.UserAgent.ParseAdd("SeuManga/0.1"); });
+                services.AddSingleton<MangaDexBrowserTransport>();
+                services.AddHttpClient<IChapterImageProvider, MangaDexImageClient>(client => { client.Timeout = TimeSpan.FromSeconds(90); client.DefaultRequestHeaders.UserAgent.ParseAdd("SeuManga/0.1"); })
+                    .ConfigurePrimaryHttpMessageHandler(provider => new MangaDexBrowserHttpMessageHandler(provider.GetRequiredService<MangaDexBrowserTransport>()))
+                    .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
                 services.AddHttpClient<IMangaCatalogProvider, MangaDexClient>(client =>
                 {
-                    client.BaseAddress = new Uri("https://api.mangadex.org/"); client.Timeout = TimeSpan.FromSeconds(20);
+                    client.BaseAddress = new Uri("https://api.mangadex.org/"); client.Timeout = TimeSpan.FromSeconds(90);
                     client.DefaultRequestHeaders.UserAgent.ParseAdd("SeuManga/0.1 (Windows desktop application)");
-                });
+                }).ConfigurePrimaryHttpMessageHandler(provider => new MangaDexBrowserHttpMessageHandler(provider.GetRequiredService<MangaDexBrowserTransport>()))
+                    .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
                 services.AddSingleton<ISecureSettingsStore>(_ => new DpapiSettingsStore(Path.Combine(dataDirectory, "api-secrets.json")));
                 services.AddTransient<ApiConnectionTester>();
                 services.AddHttpClient<ITmdbAnimeClient, TmdbClient>("TMDB", client => { client.BaseAddress = new Uri("https://api.themoviedb.org/3/"); client.Timeout = TimeSpan.FromSeconds(20); });
                 services.AddHttpClient<IWatchmodeClient, WatchmodeClient>("Watchmode", client => { client.BaseAddress = new Uri("https://api.watchmode.com/v1/"); client.Timeout = TimeSpan.FromSeconds(20); });
-                services.AddHttpClient<IAnimeCatalogProvider, JikanClient>(client => { client.BaseAddress = new Uri("https://api.jikan.moe/v4/"); client.Timeout = TimeSpan.FromSeconds(20); client.DefaultRequestHeaders.UserAgent.ParseAdd("SeuManga/0.1"); });
+                services.AddHttpClient<IAnimeCatalogProvider, JikanClient>(client => { client.BaseAddress = new Uri("https://api.jikan.moe/v4/"); client.Timeout = TimeSpan.FromSeconds(12); client.DefaultRequestHeaders.UserAgent.ParseAdd("SeuManga/0.1"); });
                 services.AddTransient<AnimeCatalogService>(); services.AddTransient<AnimeCatalogViewModel>(); services.AddTransient<SeuManga.Desktop.Views.AnimeCatalogWindow>();
                 services.AddTransient<GlobalSearchViewModel>(); services.AddTransient<SeuManga.Desktop.Views.GlobalSearchWindow>();
                 services.AddTransient<SeuManga.Desktop.Views.SettingsWindow>();
@@ -80,4 +85,3 @@ public partial class App : System.Windows.Application
         Log.CloseAndFlush(); base.OnExit(e);
     }
 }
-

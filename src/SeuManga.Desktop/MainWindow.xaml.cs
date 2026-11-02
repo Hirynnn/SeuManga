@@ -11,13 +11,16 @@ using SeuManga.Application.Library;
 using SeuManga.Application.Manga;
 using SeuManga.Desktop.ViewModels;
 using SeuManga.Desktop.Views;
+using SeuManga.Desktop.Networking;
 using SeuManga.Domain.Entities;
 using SeuManga.Domain.Enums;
 namespace SeuManga.Desktop;
-public sealed record HomeAnimeCard(int JikanId, string Title, string? ImageUrl, string ProgressText, string StatusLabel);
+public sealed record HomeAnimeCard(int JikanId, string Title, string? ImageUrl, string ProgressText, string StatusLabel, double ProgressPercent);
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private readonly IServiceProvider _services;
+    private readonly MangaDexBrowserTransport _mangaDexBrowserTransport;
+    private readonly IChapterImageProvider _imageProvider;
     private readonly Dictionary<Window, object> _pageContents = [];
     private readonly Stack<(Window? Page, string Title, string? NavigationKey)> _navigationHistory = [];
     private Window? _activePage;
@@ -26,11 +29,29 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private bool _showingHome = true;
     private bool _homeLoaded;
     private string _homeMessage = "A página inicial usa seus dados locais e catálogos online.";
+    private ReadingHistoryEntry? _featuredReading;
     public event PropertyChangedEventHandler? PropertyChanged;
     public ObservableCollection<ReadingHistoryEntry> RecentReads { get; } = [];
     public ObservableCollection<HomeAnimeCard> TrackedAnime { get; } = [];
     public ObservableCollection<AnimeSearchResult> PopularAnime { get; } = [];
     public ObservableCollection<AnimeRecommendation> HomeRecommendations { get; } = [];
+    public IChapterImageProvider ImageProvider => _imageProvider;
+    public ReadingHistoryEntry? FeaturedReading
+    {
+        get => _featuredReading;
+        private set
+        {
+            if (ReferenceEquals(_featuredReading, value)) return;
+            _featuredReading = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FeaturedReading)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FeaturedPageLabel)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasFeaturedReading)));
+        }
+    }
+    public bool HasFeaturedReading => FeaturedReading is not null;
+    public string FeaturedPageLabel => FeaturedReading is { PageCount: > 0 } reading
+        ? $"Página {Math.Clamp(reading.LastPage + 1, 1, reading.PageCount)} de {reading.PageCount}"
+        : "Continue sua leitura";
     public string HomeMessage
     {
         get => _homeMessage;
@@ -41,7 +62,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HomeMessage)));
         }
     }
-    public MainWindow(IServiceProvider services) { InitializeComponent(); _services = services; DataContext = this; UpdateNavigationHighlight("home"); }
+    public MainWindow(IServiceProvider services, MangaDexBrowserTransport mangaDexBrowserTransport)
+    {
+        InitializeComponent();
+        _services = services;
+        _mangaDexBrowserTransport = mangaDexBrowserTransport;
+        _imageProvider = services.GetRequiredService<IChapterImageProvider>();
+        _mangaDexBrowserTransport.Attach(MangaDexNetworkBrowser);
+        DataContext = this;
+        UpdateNavigationHighlight("home");
+    }
     public void NavigateToPage(Window page, string title, string? navigationKey = null)
     {
         if (ReferenceEquals(page, _activePage)) return;
@@ -113,6 +143,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var active = item.Key == key;
             item.Button.Background = active ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 42, 64)) : System.Windows.Media.Brushes.Transparent;
             item.Button.Foreground = active ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 243, 255)) : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(161, 161, 170));
+            item.Button.BorderBrush = active ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 92, 246)) : System.Windows.Media.Brushes.Transparent;
         }
     }
     private void MainWindow_KeyDown(object sender, KeyEventArgs e)
@@ -128,6 +159,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         try
         {
             var history = await _services.GetRequiredService<LibraryService>().GetHistoryAsync();
+            FeaturedReading = history.FirstOrDefault();
             foreach (var item in history.Take(8)) RecentReads.Add(item);
             var tracking = _services.GetRequiredService<AnimeTrackingService>();
             anime = await tracking.GetLibraryAsync();
@@ -135,7 +167,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 var watched = (await tracking.GetWatchedEpisodesAsync(item.JikanId)).Count;
                 var progress = item.TotalEpisodes is > 0 ? $"{watched} de {item.TotalEpisodes} episódios assistidos" : $"{watched} episódios assistidos";
-                TrackedAnime.Add(new HomeAnimeCard(item.JikanId, item.Title, item.ImageUrl, progress, item.IsFavorite ? "Assistindo · Favorito" : "Assistindo"));
+                var progressPercent = item.TotalEpisodes is > 0 ? Math.Clamp(watched * 100d / item.TotalEpisodes.Value, 0, 100) : 0;
+                TrackedAnime.Add(new HomeAnimeCard(item.JikanId, item.Title, item.ImageUrl, progress, item.IsFavorite ? "Assistindo · Favorito" : "Assistindo", progressPercent));
             }
         }
         catch (Exception ex)
@@ -179,8 +212,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void Anime_Click(object sender, RoutedEventArgs e) => NavigateToPage(_services.GetRequiredService<AnimeCatalogWindow>(), "Explorar animes", "anime");
     private void Library_Click(object sender, RoutedEventArgs e) => NavigateToPage(_services.GetRequiredService<LibraryWindow>(), "Minha biblioteca", "library");
     private void Lists_Click(object sender, RoutedEventArgs e) => NavigateToPage(_services.GetRequiredService<CustomListsWindow>(), "Listas personalizadas", "lists");
-    private void History_Click(object sender, RoutedEventArgs e) => NavigateToPage(new ReadingActivityWindow(_services.GetRequiredService<LibraryService>(), false), "Histórico de leitura", "history");
-    private void Favorites_Click(object sender, RoutedEventArgs e) => NavigateToPage(new ReadingActivityWindow(_services.GetRequiredService<LibraryService>(), true), "Favoritos", "favorites");
+    private void History_Click(object sender, RoutedEventArgs e) => NavigateToPage(new ReadingActivityWindow(_services.GetRequiredService<LibraryService>(), _services.GetRequiredService<IChapterImageProvider>(), false), "Histórico de leitura", "history");
+    private void Favorites_Click(object sender, RoutedEventArgs e) => NavigateToPage(new ReadingActivityWindow(_services.GetRequiredService<LibraryService>(), _services.GetRequiredService<IChapterImageProvider>(), true), "Favoritos", "favorites");
     private void Settings_Click(object sender, RoutedEventArgs e) => NavigateToPage(_services.GetRequiredService<SettingsWindow>(), "Configurações", "settings");
     private void GlobalSearch_Click(object sender, RoutedEventArgs e)
     {

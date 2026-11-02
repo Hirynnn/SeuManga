@@ -1,5 +1,5 @@
 ﻿#define AppName "SeuManga"
-#define AppVersion "0.1.0"
+#define AppVersion "0.2.0"
 #define PublishDir "..\src\SeuManga.Desktop\bin\Release\net10.0-windows\win-x64\publish"
 
 [Setup]

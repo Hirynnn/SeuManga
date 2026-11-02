@@ -13,18 +13,10 @@ public sealed class AnimeCatalogService(IAnimeCatalogProvider provider, ITmdbAni
     }
     public Task<AnimeDetails> GetDetailsAsync(int id, CancellationToken ct = default) => provider.GetDetailsAsync(id, ct);
     public Task<AnimePage> GetTopAnimeAsync(int page = 1, string filter = "bypopularity", int limit = 12, CancellationToken ct = default) => provider.GetTopAnimeAsync(page, filter, limit, ct);
-    public async Task<IReadOnlyList<AnimeEpisode>> GetEpisodesAsync(int id, int page = 1, CancellationToken ct = default)
+    public Task<IReadOnlyList<AnimeEpisode>> GetEpisodesAsync(int id, int page = 1, CancellationToken ct = default)
     {
         if (page < 1) throw new ArgumentOutOfRangeException(nameof(page));
-        var episodes = new List<AnimeEpisode>();
-        for (var current = page; current < page + 100; current++)
-        {
-            ct.ThrowIfCancellationRequested();
-            var batch = await provider.GetEpisodesAsync(id, current, ct);
-            episodes.AddRange(batch);
-            if (batch.Count < 100) break;
-        }
-        return episodes;
+        return provider.GetEpisodesAsync(id, page, ct);
     }
     public Task<IReadOnlyList<AnimeRecommendation>> GetRecommendationsAsync(int id, CancellationToken ct = default) => provider.GetRecommendationsAsync(id, ct);
     public async Task<TmdbAnimeMetadata?> FindTmdbMetadataAsync(AnimeSearchResult anime, CancellationToken ct = default)
